@@ -44,7 +44,7 @@
     <script src="/config.js"></script>
     <script src="/auth.js"></script>
     <script>
-        if (!document.cookie.includes("csrf_token=")) window.location.href = "/index.html";
+        if (!document.cookie.includes("csrf_token=")) window.location.href = "/insighta-web/index.html";
 
         function getCsrf() {
             const row = document.cookie.split("; ").find(r => r.startsWith("csrf_token="));
@@ -91,7 +91,7 @@
         document.getElementById("logout-btn").addEventListener("click", async (e) => {
             e.preventDefault();
             await apiFetch(`${CONFIG.API_URL}/auth/logout`, { method: "POST" });
-            window.location.href = "/index.html";
+            window.location.href = "/insighta-web/index.html";
         });
     </script>
 </body>

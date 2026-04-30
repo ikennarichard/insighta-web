@@ -42,7 +42,7 @@ async function requireAuth() {
 
   if (!res.ok) {
     if (!window.location.pathname.includes("index")) {
-      window.location.href = "/index.html";
+      window.location.href = "/insighta-web/index.html";
     }
     return null;
   }
@@ -54,5 +54,5 @@ async function requireAuth() {
 async function logout() {
   await apiFetch(`${CONFIG.API_URL}/auth/logout`, { method: "POST" });
   sessionStorage.setItem("logged_out", "true");
-  window.location.href = "/index.html";
+  window.location.href = "/insighta-web/index.html";
 }
