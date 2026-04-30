@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Insighta+ Labs — Login</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+    <style>
+      .login-container {
+        max-width: 400px;
+        margin: 120px auto;
+        text-align: center;
+      }
+      .login-container h1 {
+        margin-bottom: 8px;
+      }
+      .login-container p {
+        color: white;
+        margin-bottom: 32px;
+      }
+      .github-btn {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #24292e;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 16px;
+      }
+      .github-btn:hover {
+        background: #3a3f45;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h1>Insighta+ Labs</h1>
+      <p>Gender classification and profile analytics platform</p>
+      <a
+        href="https://genderize-plum.vercel.app/auth/github"
+        class="github-btn"
+      >
+        Login with GitHub
+      </a>
+    </div>
+
+    <script>
+      window.INSIGHTA_API_URL = "https://genderize-plum.vercel.app";
+      </script>
+    <script src="/config.js"></script>
+    <script src="/auth.js"></script>
+    <script>
+      const justLoggedOut = sessionStorage.getItem("logged_out");
+      if (justLoggedOut) {
+        sessionStorage.removeItem("logged_out");
+      } else {
+        apiFetch("/api/v1/me")
+          .then((res) => {
+            if (res.ok) window.location.href = "/dashboard.html";
+          })
+          .catch(() => {});
+      }
+    </script>
+     <script>
+      window.INSIGHTA_API_URL = "https://genderize-plum.vercel.app";
+      </script>
+    <script src="/config.js"></script>
+    <script src="/auth.js"></script>
+  </body>
+</html>

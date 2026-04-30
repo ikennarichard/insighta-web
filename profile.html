@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Profile Detail — Insighta+</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+    <style>
+      nav {
+        display: flex;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 24px;
+      }
+      nav a {
+        text-decoration: none;
+      }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 8px 16px;
+        max-width: 500px;
+      }
+      .detail-grid span:nth-child(odd) {
+        font-weight: bold;
+        color: #555;
+      }
+      .back-link {
+        margin-bottom: 16px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <strong>Insighta+</strong> &nbsp;|&nbsp;
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/profiles.html">Profiles</a>
+      <a href="/search.html">Search</a>
+      <a href="/account.html">Account</a>
+      <a href="#" id="logout-btn" style="margin-left: auto">Logout</a>
+    </nav>
+
+    <a href="/profiles.html" class="back-link">← Back to Profiles</a>
+    <h2 id="profile-name">Loading...</h2>
+
+    <div class="detail-grid" id="detail-grid"></div>
+    <script>
+      window.INSIGHTA_API_URL = "https://genderize-plum.vercel.app";
+      </script>
+    <script src="/config.js"></script>
+    <script src="/auth.js"></script>
+    <script>
+      if (!document.cookie.includes("csrf_token="))
+        window.location.href = "/index.html";
+
+      function getCsrf() {
+        const row = document.cookie
+          .split("; ")
+          .find((r) => r.startsWith("csrf_token="));
+        return row ? row.split("=")[1] : "";
+      }
+
+      async function apiFetch(url, opts = {}) {
+        return fetch(url, {
+          ...opts,
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Version": "1",
+            "X-CSRF-Token": getCsrf(),
+            ...(opts.headers || {}),
+          },
+        });
+      }
+
+      async function loadProfile() {
+        const id = new URLSearchParams(window.location.search).get("id");
+        if (!id) {
+          document.getElementById("profile-name").textContent =
+            "Profile not found";
+          return;
+        }
+
+        const res = await apiFetch(
+          `${CONFIG.API_URL}/api/v1/profiles/${id}`,
+        );
+        const data = await res.json();
+        const p = data.data;
+
+        document.getElementById("profile-name").textContent = p.name;
+        document.getElementById("detail-grid").innerHTML = `
+                <span>Gender</span>       <span>${p.gender || "—"}</span>
+                <span>Probability</span>  <span>${p.gender_probability ? (p.gender_probability * 100).toFixed(1) + "%" : "—"}</span>
+                <span>Age</span>          <span>${p.age || "—"}</span>
+                <span>Age Group</span>    <span>${p.age_group || "—"}</span>
+                <span>Country</span>      <span>${p.country_name || "—"} ${p.country_id ? "(" + p.country_id + ")" : ""}</span>
+                <span>Country Prob.</span><span>${p.country_probability ? (p.country_probability * 100).toFixed(1) + "%" : "—"}</span>
+                <span>Sample Size</span>  <span>${p.sample_size || "—"}</span>
+                <span>Created</span>      <span>${p.created_at ? new Date(p.created_at).toLocaleDateString() : "—"}</span>
+            `;
+      }
+
+      document
+        .getElementById("logout-btn")
+        .addEventListener("click", async (e) => {
+          e.preventDefault();
+          await apiFetch(`${CONFIG.API_URL}/auth/logout`, {
+            method: "POST",
+          });
+          window.location.href = "/index.html";
+        });
+
+      loadProfile();
+    </script>
+  </body>
+</html>

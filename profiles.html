@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Profiles — Insighta+</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+    <style>
+      nav {
+        display: flex;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 24px;
+      }
+      nav a {
+        text-decoration: none;
+      }
+      .filters {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .filters select,
+      .filters input {
+        margin: 0;
+      }
+      .pagination {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <strong>Insighta+</strong> &nbsp;|&nbsp;
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/profiles.html">Profiles</a>
+      <a href="/search.html">Search</a>
+      <a href="/account.html">Account</a>
+      <a href="#" id="logout-btn" style="margin-left: auto">Logout</a>
+    </nav>
+
+    <h2>Profiles</h2>
+
+    <div class="filters">
+      <select id="filter-gender">
+        <option value="">All Genders</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+    <select id="filter-age-group">
+      <option value="">All Age Groups</option>
+      <option value="child">Child (0-12)</option>
+      <option value="teenager">Teenager (13-19)</option>
+      <option value="adult">Adult (20-64)</option>
+      <option value="senior">Senior (65+)</option>
+    </select>
+      <input
+        type="text"
+        id="filter-country"
+        placeholder="Country code e.g. US"
+        style="width: 160px"
+      />
+      <button id="apply-filters">Apply</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Gender</th>
+          <th>Age</th>
+          <th>Country</th>
+          <th>Probability</th>
+        </tr>
+      </thead>
+      <tbody id="profile-list">
+        <tr>
+          <td colspan="5">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <button id="prev-btn" disabled>← Prev</button>
+      <span id="page-info">Page 1</span>
+      <button id="next-btn">Next →</button>
+    </div>
+    <script>
+      window.INSIGHTA_API_URL = "https://genderize-plum.vercel.app";
+      </script>
+    <script src="/config.js"></script>
+    <script src="/auth.js"></script>
+    <script>
+      if (!document.cookie.includes("csrf_token="))
+        window.location.href = "/index.html";
+
+      let page = 1;
+      const limit = 10;
+
+      function getCsrf() {
+        const row = document.cookie
+          .split("; ")
+          .find((r) => r.startsWith("csrf_token="));
+        return row ? row.split("=")[1] : "";
+      }
+
+      async function apiFetch(url, opts = {}) {
+        return fetch(url, {
+          ...opts,
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Version": "1",
+            ...(opts.headers || {}),
+          },
+        });
+      }
+
+      async function loadProfiles() {
+        const gender = document.getElementById("filter-gender").value;
+        const ageGroup = document.getElementById("filter-age-group").value;
+        const country = document.getElementById("filter-country").value.trim();
+
+        const params = new URLSearchParams({ page, limit });
+        if (gender) params.set("gender", gender);
+        if (ageGroup) params.set("age_group", ageGroup);
+        if (country) params.set("country_id", country);
+
+        const res = await apiFetch(
+          `${CONFIG.API_URL}/api/v1/profiles?${params}`,
+        );
+        const data = await res.json();
+        const profiles = data.data || [];
+        const total = data.total || 0;
+
+        document.getElementById("profile-list").innerHTML =
+          profiles
+            .map(
+              (p) => `
+                <tr>
+                    <td><a href="/profile.html?id=${p.id}">${p.name}</a></td>
+                    <td>${p.gender || "—"}</td>
+                    <td>${p.age || "—"}</td>
+                    <td>${p.country_name || p.country_id || "—"}</td>
+                    <td>${p.gender_probability ? (p.gender_probability * 100).toFixed(1) + "%" : "—"}</td>
+                </tr>
+            `,
+            )
+            .join("") || "<tr><td colspan='5'>No profiles found</td></tr>";
+
+        document.getElementById("page-info").textContent =
+          `Page ${page} of ${Math.ceil(total / limit) || 1}`;
+        document.getElementById("prev-btn").disabled = page <= 1;
+        document.getElementById("next-btn").disabled = page * limit >= total;
+      }
+
+      document.getElementById("apply-filters").addEventListener("click", () => {
+        page = 1;
+        loadProfiles();
+      });
+      document.getElementById("prev-btn").addEventListener("click", () => {
+        page--;
+        loadProfiles();
+      });
+      document.getElementById("next-btn").addEventListener("click", () => {
+        page++;
+        loadProfiles();
+      });
+      document
+        .getElementById("logout-btn")
+        .addEventListener("click", async (e) => {
+          e.preventDefault();
+          await apiFetch(`${CONFIG.API_URL}/auth/logout`, {
+            method: "POST",
+          });
+          window.location.href = "/index.html";
+        });
+
+      loadProfiles();
+    </script>
+  </body>
+</html>
