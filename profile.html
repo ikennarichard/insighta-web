@@ -53,8 +53,17 @@
     <script src="/config.js"></script>
     <script src="/auth.js"></script>
     <script>
-      if (!document.cookie.includes("csrf_token="))
-        window.location.href = "/";
+    
+          setTimeout(() => {
+        requireAuth().then((user) => {
+          if (user) {
+
+          return;
+          } else {
+            window.location.href = "/";
+          }
+        });
+      }, 500);
 
       function getCsrf() {
         const row = document.cookie
