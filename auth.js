@@ -31,18 +31,18 @@ async function tryRefresh() {
 }
 
 async function requireAuth() {
-  let res = await apiFetch(`${CONFIG.API_URL}/api/v1/me`);
+  let res = await apiFetch(`${CONFIG.API_URL}/api/v1/users/me`);
 
   if (res.status === 401) {
     const refreshed = await tryRefresh();
     if (refreshed) {
-      res = await apiFetch("/api/v1/me"); // retry after refresh
+      res = await apiFetch(`${CONFIG.API_URL}/api/v1/users/me`); // retry after refresh
     }
   }
 
   if (!res.ok) {
-    if (!window.location.pathname.includes("index")) {
-      window.location.href = "/index.html";
+    if (!window.location.pathname.includes("jade")) {
+      window.location.href = "/";
     }
     return null;
   }
@@ -54,5 +54,5 @@ async function requireAuth() {
 async function logout() {
   await apiFetch(`${CONFIG.API_URL}/auth/logout`, { method: "POST" });
   sessionStorage.setItem("logged_out", "true");
-  window.location.href = "/index.html";
+  window.location.href = "/";
 }

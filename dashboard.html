@@ -100,9 +100,11 @@
     <script src="/auth.js"></script>
     <script>
 
-      requireAuth().then((user) => {
-        if (user) loadDashboard();
-      });
+      setTimeout(() => {
+        requireAuth().then((user) => {
+          if (user) loadDashboard();
+        });
+      }, 500);
 
       async function loadDashboard() {
         try {
