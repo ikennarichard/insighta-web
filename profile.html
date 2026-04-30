@@ -54,7 +54,7 @@
     <script src="/auth.js"></script>
     <script>
       if (!document.cookie.includes("csrf_token="))
-        window.location.href = "/index.html";
+        window.location.href = "/insighta-web/index.html";
 
       function getCsrf() {
         const row = document.cookie
@@ -110,7 +110,7 @@
           await apiFetch(`${CONFIG.API_URL}/auth/logout`, {
             method: "POST",
           });
-          window.location.href = "/index.html";
+          window.location.href = "/insighta-web/index.html";
         });
 
       loadProfile();
