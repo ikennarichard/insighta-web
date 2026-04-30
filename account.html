@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Account — Insighta+</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+    <style>
+      nav {
+        display: flex;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 24px;
+      }
+      nav a {
+        text-decoration: none;
+      }
+      .profile-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 32px;
+      }
+      .profile-card img {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+      }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 8px 16px;
+        max-width: 400px;
+      }
+      .detail-grid span:nth-child(odd) {
+        font-weight: bold;
+        color: white;
+      }
+      .danger {
+        color: #c00;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <strong>Insighta+</strong> &nbsp;|&nbsp;
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/profiles.html">Profiles</a>
+      <a href="/search.html">Search</a>
+      <a href="/account.html">Account</a>
+      <a href="#" id="logout-btn" style="margin-left: auto">Logout</a>
+    </nav>
+
+    <h2>Account</h2>
+
+    <div class="profile-card">
+      <img
+        id="avatar"
+        src=""
+        alt="Avatar"
+        onerror="this.style.display = 'none'"
+      />
+      <div>
+        <h3 id="username">Loading...</h3>
+        <p id="role" style="margin: 0; color: #fff"></p>
+      </div>
+    </div>
+
+    <div class="detail-grid" id="detail-grid"></div>
+
+    <br />
+    <button id="logout-main" class="">Logout</button>
+    <script src="/auth.js"></script>
+    <script>
+        requireAuth().then((user) => {
+        if (user) loadAccount();
+      });
+
+
+      async function loadAccount() {
+        const res = await apiFetch("http://127.0.0.1:8080/api/v1/me");
+        if (!res.ok) {
+          window.location.href = "/index.html";
+          return;
+        }
+        const data = await res.json();
+        const user = data.data || data;
+
+        document.getElementById("avatar").src = user.avatar_url || "";
+        document.getElementById("username").textContent = user.username || "—";
+        document.getElementById("role").textContent =
+          "Role: " + (user.role || "—");
+        document.getElementById("detail-grid").innerHTML = `
+                <span>Email</span>    <span>${user.email || "—"}</span>
+                <span>GitHub ID</span><span>${user.github_id || "—"}</span>
+                <span>Status</span>   <span>${user.is_active ? "Active" : "Inactive"}</span>
+            `;
+      }
+
+      document.getElementById("logout-btn").addEventListener("click", logout);
+      document.getElementById("logout-main").addEventListener("click", logout);
+    </script>
+  </body>
+</html>

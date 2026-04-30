@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard — Insighta+</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+    <style>
+      nav {
+        display: flex;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 24px;
+      }
+      nav a {
+        text-decoration: none;
+      }
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+      .card {
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 2em;
+      }
+      .card p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+      }
+      #error-msg {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <strong>Insighta+</strong> &nbsp;|&nbsp;
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/profiles.html">Profiles</a>
+      <a href="/search.html">Search</a>
+      <a href="/account.html">Account</a>
+      <a href="#" id="logout-btn" style="margin-left: auto">Logout</a>
+    </nav>
+
+    <h2>Dashboard</h2>
+    <p id="error-msg"></p>
+
+    <div class="metrics" id="metrics">
+      <div class="card">
+        <h2>—</h2>
+        <p>Total Profiles</p>
+      </div>
+      <div class="card">
+        <h2>—</h2>
+        <p>Male</p>
+      </div>
+      <div class="card">
+        <h2>—</h2>
+        <p>Female</p>
+      </div>
+      <div class="card">
+        <h2>—</h2>
+        <p>Countries</p>
+      </div>
+    </div>
+
+    <h3>Recent Profiles</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Gender</th>
+          <th>Age</th>
+          <th>Country</th>
+        </tr>
+      </thead>
+      <tbody id="recent-profiles">
+        <tr>
+          <td colspan="4">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <script src="/auth.js"></script>
+    <script>
+
+      requireAuth().then((user) => {
+        if (user) loadDashboard();
+      });
+
+      async function loadDashboard() {
+        try {
+          const res = await apiFetch(
+            "http://127.0.0.1:8080/api/v1/profiles?limit=5",
+          );
+          const data = await res.json();
+
+          if (!res.ok) {
+            document.getElementById("error-msg").textContent =
+              data.message || "Failed to load";
+            return;
+          }
+
+          const profiles = data.data || [];
+          const total = data.total || 0;
+          const male = profiles.filter((p) => p.gender === "male").length;
+          const female = profiles.filter((p) => p.gender === "female").length;
+          const countries = [
+            ...new Set(profiles.map((p) => p.country_id).filter(Boolean)),
+          ].length;
+
+          document.getElementById("metrics").innerHTML = `
+                    <div class="card"><h2>${total}</h2><p>Total Profiles</p></div>
+                    <div class="card"><h2>${male}</h2><p>Male</p></div>
+                    <div class="card"><h2>${female}</h2><p>Female</p></div>
+                    <div class="card"><h2>${countries}</h2><p>Countries</p></div>
+                `;
+
+          document.getElementById("recent-profiles").innerHTML =
+            profiles
+              .map(
+                (p) => `
+                    <tr>
+                        <td><a href="/profile.html?id=${p.id}">${p.name}</a></td>
+                        <td>${p.gender || "—"}</td>
+                        <td>${p.age || "—"}</td>
+                        <td>${p.country_name || p.country_id || "—"}</td>
+                    </tr>
+                `,
+              )
+              .join("") || "<tr><td colspan='4'>No profiles found</td></tr>";
+        } catch (e) {
+          document.getElementById("error-msg").textContent =
+            "Network error: " + e.message;
+        }
+      }
+
+      // logout() comes from auth.js
+      document.getElementById("logout-btn").addEventListener("click", (e) => {
+        e.preventDefault();
+        logout();
+      });
+    </script>
+  </body>
+</html>

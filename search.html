@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search — Insighta+</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+    <style>
+        nav { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid #eee; margin-bottom: 24px; }
+        nav a { text-decoration: none; }
+        .search-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+        .search-bar input { flex: 1; }
+        .hint { color: #888; font-size: 13px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <strong>Insighta+</strong> &nbsp;|&nbsp;
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/profiles.html">Profiles</a>
+        <a href="/search.html">Search</a>
+        <a href="/account.html">Account</a>
+        <a href="#" id="logout-btn" style="margin-left:auto">Logout</a>
+    </nav>
+
+    <h2>Natural Language Search</h2>
+    <p class="hint">Try queries like: "male above 30", "female from US", "age between 20 and 40"</p>
+
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Enter your query...">
+        <button id="search-btn">Search</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Gender</th><th>Age</th><th>Country</th></tr>
+        </thead>
+        <tbody id="search-results">
+            <tr><td colspan="4">Enter a query above to search profiles.</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        if (!document.cookie.includes("csrf_token=")) window.location.href = "/index.html";
+
+        function getCsrf() {
+            const row = document.cookie.split("; ").find(r => r.startsWith("csrf_token="));
+            return row ? row.split("=")[1] : "";
+        }
+
+        async function apiFetch(url, opts = {}) {
+            return fetch(url, {
+                ...opts,
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-API-Version": "1",
+                    ...(opts.headers || {}),
+                },
+            });
+        }
+
+        async function runSearch() {
+            const q = document.getElementById("search-input").value.trim();
+            if (!q) return;
+
+            document.getElementById("search-results").innerHTML = "<tr><td colspan='4'>Searching...</td></tr>";
+
+            const res = await apiFetch(`http://127.0.0.1:8080/api/v1/profiles/search?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            const profiles = data.data || [];
+
+            document.getElementById("search-results").innerHTML = profiles.map(p => `
+                <tr>
+                    <td><a href="/profile.html?id=${p.id}">${p.name}</a></td>
+                    <td>${p.gender || "—"}</td>
+                    <td>${p.age || "—"}</td>
+                    <td>${p.country_name || p.country_id || "—"}</td>
+                </tr>
+            `).join("") || "<tr><td colspan='4'>No results found.</td></tr>";
+        }
+
+        document.getElementById("search-btn").addEventListener("click", runSearch);
+        document.getElementById("search-input").addEventListener("keydown", (e) => {
+            if (e.key === "Enter") runSearch();
+        });
+
+        document.getElementById("logout-btn").addEventListener("click", async (e) => {
+            e.preventDefault();
+            await apiFetch("http://127.0.0.1:8080/auth/logout", { method: "POST" });
+            window.location.href = "/index.html";
+        });
+    </script>
+</body>
+</html>
