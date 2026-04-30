@@ -56,9 +56,9 @@
       if (justLoggedOut) {
         sessionStorage.removeItem("logged_out");
       } else {
-        apiFetch("/api/v1/me")
+        apiFetch(`${CONFIG.API_URL}/api/v1/users/me`)
           .then((res) => {
-            if (res.ok) window.location.href = "/dashboard.html";
+            if (res.ok) window.location.href = "/insighta-web/dashboard.html";
           })
           .catch(() => {});
       }
