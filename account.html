@@ -76,9 +76,11 @@
     <script src="/config.js"></script>
     <script src="/auth.js"></script>
     <script>
+      setTimeout(() => {
         requireAuth().then((user) => {
         if (user) loadAccount();
       });
+    }, 500)
 
 
       async function loadAccount() {
