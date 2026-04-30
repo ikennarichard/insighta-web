@@ -92,7 +92,11 @@
       <span id="page-info">Page 1</span>
       <button id="next-btn">Next →</button>
     </div>
-
+    <script>
+      window.INSIGHTA_API_URL = "https://genderize-plum.vercel.app";
+      </script>
+    <script src="/config.js"></script>
+    <script src="/auth.js"></script>
     <script>
       if (!document.cookie.includes("csrf_token="))
         window.location.href = "/index.html";
@@ -130,7 +134,7 @@
         if (country) params.set("country_id", country);
 
         const res = await apiFetch(
-          `http://127.0.0.1:8080/api/v1/profiles?${params}`,
+          `${CONFIG.API_URL}/api/v1/profiles?${params}`,
         );
         const data = await res.json();
         const profiles = data.data || [];
@@ -173,7 +177,7 @@
         .getElementById("logout-btn")
         .addEventListener("click", async (e) => {
           e.preventDefault();
-          await apiFetch("http://127.0.0.1:8080/auth/logout", {
+          await apiFetch(`${CONFIG.API_URL}/auth/logout`, {
             method: "POST",
           });
           window.location.href = "/index.html";

@@ -38,7 +38,11 @@
             <tr><td colspan="4">Enter a query above to search profiles.</td></tr>
         </tbody>
     </table>
-
+    <script>
+      window.INSIGHTA_API_URL = "https://genderize-plum.vercel.app";
+      </script>
+    <script src="/config.js"></script>
+    <script src="/auth.js"></script>
     <script>
         if (!document.cookie.includes("csrf_token=")) window.location.href = "/index.html";
 
@@ -65,7 +69,7 @@
 
             document.getElementById("search-results").innerHTML = "<tr><td colspan='4'>Searching...</td></tr>";
 
-            const res = await apiFetch(`http://127.0.0.1:8080/api/v1/profiles/search?q=${encodeURIComponent(q)}`);
+            const res = await apiFetch(`${CONFIG.API_URL}/api/v1/profiles/search?q=${encodeURIComponent(q)}`);
             const data = await res.json();
             const profiles = data.data || [];
 
@@ -86,7 +90,7 @@
 
         document.getElementById("logout-btn").addEventListener("click", async (e) => {
             e.preventDefault();
-            await apiFetch("http://127.0.0.1:8080/auth/logout", { method: "POST" });
+            await apiFetch(`${CONFIG.API_URL}/auth/logout`, { method: "POST" });
             window.location.href = "/index.html";
         });
     </script>

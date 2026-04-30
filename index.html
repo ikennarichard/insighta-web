@@ -46,9 +46,12 @@
       </a>
     </div>
 
-    <script src="/auth.js"></script>
     <script>
       window.INSIGHTA_API_URL = "https://genderize-plum.vercel.app";
+      </script>
+    <script src="/config.js"></script>
+    <script src="/auth.js"></script>
+    <script>
       const justLoggedOut = sessionStorage.getItem("logged_out");
       if (justLoggedOut) {
         sessionStorage.removeItem("logged_out");
@@ -60,5 +63,10 @@
           .catch(() => {});
       }
     </script>
+     <script>
+      window.INSIGHTA_API_URL = "https://genderize-plum.vercel.app";
+      </script>
+    <script src="/config.js"></script>
+    <script src="/auth.js"></script>
   </body>
 </html>
