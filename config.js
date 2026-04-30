@@ -1,3 +1,3 @@
 const CONFIG = {
-    API_URL: window.INSIGHTA_API_URL
+    API_URL: "https://genderize-git-develop-ikennarichards-projects.vercel.app"
 };
