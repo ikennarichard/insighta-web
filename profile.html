@@ -107,7 +107,6 @@
                 <span>Age Group</span>    <span>${p.age_group || "—"}</span>
                 <span>Country</span>      <span>${p.country_name || "—"} ${p.country_id ? "(" + p.country_id + ")" : ""}</span>
                 <span>Country Prob.</span><span>${p.country_probability ? (p.country_probability * 100).toFixed(1) + "%" : "—"}</span>
-                <span>Sample Size</span>  <span>${p.sample_size || "—"}</span>
                 <span>Created</span>      <span>${p.created_at ? new Date(p.created_at).toLocaleDateString() : "—"}</span>
             `;
       }
